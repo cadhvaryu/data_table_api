@@ -42,6 +42,7 @@ router.post('/addTemplateField', function (req, res) {
                         } else {
                             let fieldQuery = "ALTER TABLE " + post.tmpltName + " ADD COLUMN " + post.tfmFieldName.replace(" ","_").toLowerCase() + " " + setDataType(post.tfmField, post.tfmFieldLength)
                             connection.query(fieldQuery, function (err, register1) {
+                                connection.release();  
                                 if (err) {
                                     res.json({
                                         status: false,
@@ -85,6 +86,7 @@ router.post('/saveTemplateForm', function (req, res) {
                 post.values
             ];
             connection.query(sql, [values], function (err, register) {
+                connection.release();  
                 if (err) {
                     console.log(err);
                     res.json({
@@ -133,6 +135,7 @@ router.post('/addTemplate', function (req, res) {
                         } else {
                             let tblQuery = "CREATE TABLE " + post.tmpltName.replace(" ","_").toLowerCase() + "(id INT(10) AUTO_INCREMENT PRIMARY KEY, dateCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, dateModified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)";
                             connection.query(tblQuery, function (err, register1) {
+                                connection.release();  
                                 if (err) {
                                     res.json({
                                         status: false,
@@ -173,6 +176,7 @@ router.put('/updateFieldStatus/:id', function(req, res) {
         } else {
             var sql = "UPDATE template_field_master SET tfmFieldIsActive = ? WHERE tfmId = ?";
             connection.query(sql, [post.tfmFieldIsActive, id], function (err, rows) {
+                connection.release();  
                 if (err) {
                     res.json({
                         status: false,
@@ -201,6 +205,7 @@ router.put('/updateTemplate/:id', function(req, res) {
         } else {
             var sql = "UPDATE template_master SET tmpltName = ?, tmpltLayoutId = ? WHERE tmpltId = ?";
             connection.query(sql, [post.tmpltName, post.tmpltLayoutId, id], function (err, rows) {
+                connection.release();  
                 if (err) {
                     res.json({
                         status: false,
@@ -228,6 +233,7 @@ router.delete('/deleteTemplateField/:id', function (req, res) {
       } else {
         var sql = "DELETE FROM template_field_master WHERE tfmId = ?";
         connection.query(sql, [id], function (err, rows) {
+            connection.release();  
             if (err) {
                 res.json({
                     status: false,
@@ -255,6 +261,7 @@ router.delete('/deleteTemplate/:id', function (req, res) {
         } else {
             var sql = "DELETE FROM template_master WHERE tmpltId = ?";
             connection.query(sql, [id], function (err, rows) {
+                connection.release();  
                 if (err) {
                     res.json({
                         status: false,
@@ -284,7 +291,8 @@ router.post('/getTemplateFieldsRecords', function (req, res) {
             console.log("In Else Condition");
           var sql = "SELECT * FROM " + post.tableName;
           connection.query(sql, function (err, rows) {
-              if (err) {
+            connection.release();    
+            if (err) {
                   res.json({
                       status: false,
                       message: err
@@ -316,7 +324,8 @@ router.get('/getTemplateRecord/:id', function (req, res) {
     } else {
       var sql = "SELECT * FROM template_master WHERE tmpltIsActive = 1 AND tmpltIsDeleted = 0 AND tmpltId = ?";
       connection.query(sql, [id], function (err, rows) {
-          if (err) {
+        connection.release();    
+        if (err) {
               res.json({
                   status: 404,
                   message: err
@@ -350,6 +359,7 @@ router.get('/getTemplateField/:id', function (req, res) {
             
             var sql = "SELECT * FROM template_field_master WHERE tfmTemplateId = ? ORDER BY tfmId ASC";
             connection.query(sql, [id], function (err, rows) {
+                connection.release();  
                 if (err) {
                     res.json({
                         status: false,
@@ -382,7 +392,8 @@ router.get('/getTemplates', function (req, res) {
           
           var sql = "SELECT t.*, (SELECT lytName FROM layout_master AS l where l.lytId = t.tmpltLayoutId) as layoutName FROM template_master AS t WHERE tmpltIsActive = 1 AND tmpltIsDeleted = 0 ORDER BY tmpltId ASC";
           connection.query(sql, function (err, rows) {
-              if (err) {
+            connection.release();    
+            if (err) {
                   res.json({
                       status: false,
                       message: err
@@ -414,7 +425,8 @@ router.get('/getLayoutRecords', function (req, res) {
           
           var sql = "SELECT * FROM layout_master WHERE lytIsActive = 1 AND lytIsDeleted = 0 ORDER BY lytId ASC";
           connection.query(sql, function (err, rows) {
-              if (err) {
+            connection.release();    
+            if (err) {
                   res.json({
                       status: false,
                       message: err
