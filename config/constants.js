@@ -4,11 +4,10 @@ module.exports = {
     config: {
         host: '3.223.187.194',
         port: "3306",
-        user: 'db_temp_user',
-        password: 'Aptb78?0',
-        database: 'db_templates', //database name
+        user: 'temp_user',
+        password: 'pqEy5$30',
+        database: 'templates_db', //database name
         multipleStatements: true,
-        whichdb: "LOCAL"
     },
     SENDGRID:{
         USERNAME : "rentvecnew",
