@@ -2,10 +2,11 @@ module.exports = {
     JWT_SECRET :"JWT_SECRET",
     API_URL : "https://datatbale-api.herokuapp.com:5000/",
     config: {
-        host: 'eu-cdbr-west-03.cleardb.net',
-        user: 'b61a43272ad92a',
-        password: '97a29601',
-        database: 'heroku_d6ceef3009c89e3', //database name
+        host: 'sql12.freemysqlhosting.net',
+        port: "3306",
+        user: 'sql12390145',
+        password: 'HqbkJI74up',
+        database: 'sql12390145', //database name
         multipleStatements: true
     },
     SENDGRID:{
