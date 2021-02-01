@@ -5,7 +5,7 @@ module.exports = {
         host: '3.223.187.194',
         port: "3306",
         user: 'temp_user',
-        password: 'pqEy5$30',
+        password: '6dPhe@48',
         database: 'templates_db', //database name
         multipleStatements: true,
     },
