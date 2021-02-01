@@ -15,7 +15,7 @@ var http            = require('http');
 var cors            = require('cors');
 
 //app port
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 var app = express();
 // app.use(compression())
