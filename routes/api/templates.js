@@ -131,7 +131,7 @@ router.post('/addTemplate', function (req, res) {
                                 message: err
                             });
                         } else {
-                            let tblQuery = "CREATE TABLE " + post.tmpltName.replace(" ","_").toLowerCase() + "(id INT(10) AUTO_INCREMENT PRIMARY KEY, dateCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, dateModified TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)";
+                            let tblQuery = "CREATE TABLE " + post.tmpltName.replace(" ","_").toLowerCase() + "(id INT(10) AUTO_INCREMENT PRIMARY KEY, dateCreated TIMESTAMP NULL, dateModified TIMESTAMP NULL)";
                             connection.query(tblQuery, function (err, register1) {
                                 if (err) {
                                     res.json({
