@@ -40,7 +40,7 @@ router.post('/addTemplateField', function (req, res) {
                                 message: err
                             });
                         } else {
-                            let fieldQuery = "ALTER TABLE " + post.tmpltName + " ADD COLUMN " + post.tfmFieldName.replace(" ","_").toLowerCase() + " " + setDataType(post.tfmField, post.tfmFieldLength)
+                            let fieldQuery = "ALTER TABLE " + post.tmpltName + " ADD COLUMN `" + post.tfmFieldName.replace(" ","_").toLowerCase() + "` " + setDataType(post.tfmField, post.tfmFieldLength)
                             connection.query(fieldQuery, function (err, register1) {
                                 if (err) {
                                     res.json({
@@ -243,7 +243,7 @@ router.post('/addTemplate', function (req, res) {
                                 message: err
                             });
                         } else {
-                            let checkTableQuery = "select * from information_schema.tables where table_name = ? ";
+                            let checkTableQuery = "SELECT * FROM information_schema.tables where table_name = ? ";
 
                             connection.query(checkTableQuery, [post.tmpltName.replace(" ","_").toLowerCase()], function (err, checkTable) {
 
@@ -576,7 +576,7 @@ function setDataType(value, length) {
     } else if (value === 'integer') {
         return 'INT('+ length +') NULL';
     } else if (value === 'checkbox') {
-        return 'BOOLEAN';
+        return 'BOOLEAN NULL';
     } else {
         return 'TEXT';
     }
