@@ -243,9 +243,9 @@ router.post('/addTemplate', function (req, res) {
                                 message: err
                             });
                         } else {
-                            let checkTableQuery = "select * from information_schema.tables where table_name= " + post.tmpltName.replace(" ","_").toLowerCase();
+                            let checkTableQuery = "select * from information_schema.tables where table_name = ? ";
 
-                            connection.query(checkTableQuery, function (err, checkTable) {
+                            connection.query(checkTableQuery, [post.tmpltName.replace(" ","_").toLowerCase()], function (err, checkTable) {
 
                                 if (err) {
                                     res.json({
