@@ -231,6 +231,7 @@ router.post('/addTemplate', function (req, res) {
                 });
             } else {
                 if (checkemail.length === 0) {
+
                     var sql = "INSERT INTO template_master (tmpltName, tmpltLayoutId, tmpltIsActive, tmpltIsDeleted) VALUES ?";
                     var values = [
                         [post.tmpltName, post.tmpltLayoutId, 1, 0]
@@ -242,24 +243,47 @@ router.post('/addTemplate', function (req, res) {
                                 message: err
                             });
                         } else {
-                            let tblQuery = "CREATE TABLE " + post.tmpltName.replace(" ","_").toLowerCase() + "(id INT(10) AUTO_INCREMENT PRIMARY KEY, fieldOrder INT(10) NULL)";
-                            connection.query(tblQuery, function (err, register1) {
+                            let checkTableQuery = "select * from information_schema.tables where table_name= " + post.tmpltName.replace(" ","_").toLowerCase();
+
+                            connection.query(checkTableQuery, function (err, checkTable) {
+
                                 if (err) {
                                     res.json({
                                         status: false,
                                         message: err
                                     });
                                 } else {
-                                    res.json({
-                                        data: register.tmpltId,
-                                        status: true,
-                                        message: "Template inserted successfully"
-                                    });
+        
+                                    if (checkTable.length === 0) {
+                                        let tblQuery = "CREATE TABLE " + post.tmpltName.replace(" ","_").toLowerCase() + "(id INT(10) AUTO_INCREMENT PRIMARY KEY, fieldOrder INT(10) NULL)";
+                                        connection.query(tblQuery, function (err, register1) {
+                                            if (err) {
+                                                res.json({
+                                                    status: false,
+                                                    message: err
+                                                });
+                                            } else {
+                                                res.json({
+                                                    data: register.tmpltId,
+                                                    status: true,
+                                                    message: "Template inserted successfully"
+                                                });
+                                            }
+                                        });
+                                    } else {
+                                        res.json({
+                                            data: register.tmpltId,
+                                            status: true,
+                                            message: "Template inserted successfully"
+                                        });
+                                    }
+        
                                 }
+
                             });
-                            
                         }
                     });
+                    
                 } else {
                   res.json({
                     status: false,
