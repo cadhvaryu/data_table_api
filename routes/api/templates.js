@@ -21,7 +21,7 @@ router.post('/addTemplateField', function (req, res) {
               message: err
           });
       } else {
-          connection.query("SELECT * FROM template_field_master WHERE tfmFieldName = ?", [post.tfmFieldName], function (err, checkemail) {
+          connection.query("SELECT * FROM template_field_master WHERE tfmFieldName = ? AND tfmTemplateId = ?", [post.tfmFieldName, post.tfmTemplateId], function (err, checkemail) {
               if (err) {
                   res.json({
                       status: false,
