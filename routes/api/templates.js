@@ -40,7 +40,7 @@ router.post('/addTemplateField', function (req, res) {
                                 message: err
                             });
                         } else {
-                            let fieldQuery = "ALTER TABLE " + post.tmpltName + " ADD COLUMN `" + post.tfmFieldName.replace(" ","_").toLowerCase() + "` " + setDataType(post.tfmField, post.tfmFieldLength)
+                            let fieldQuery = "ALTER TABLE " + post.tmpltName + " ADD COLUMN `" + post.tfmFieldName.replace(/ /g,"_").toLowerCase() + "` " + setDataType(post.tfmField, post.tfmFieldLength)
                             connection.query(fieldQuery, function (err, register1) {
                                 if (err) {
                                     res.json({
@@ -245,7 +245,7 @@ router.post('/addTemplate', function (req, res) {
                         } else {
                             let checkTableQuery = "SELECT * FROM information_schema.tables where table_name = ? ";
 
-                            connection.query(checkTableQuery, [post.tmpltName.replace(" ","_").toLowerCase()], function (err, checkTable) {
+                            connection.query(checkTableQuery, [post.tmpltName.replace(/ /g,"_").toLowerCase()], function (err, checkTable) {
 
                                 if (err) {
                                     res.json({
@@ -255,7 +255,7 @@ router.post('/addTemplate', function (req, res) {
                                 } else {
         
                                     if (checkTable.length === 0) {
-                                        let tblQuery = "CREATE TABLE " + post.tmpltName.replace(" ","_").toLowerCase() + "(id INT(10) AUTO_INCREMENT PRIMARY KEY, fieldOrder INT(10) NULL)";
+                                        let tblQuery = "CREATE TABLE `" + post.tmpltName.replace(/ /g,"_").toLowerCase() + "` (id INT(10) AUTO_INCREMENT PRIMARY KEY, fieldOrder INT(10) NULL)";
                                         connection.query(tblQuery, function (err, register1) {
                                             if (err) {
                                                 res.json({
