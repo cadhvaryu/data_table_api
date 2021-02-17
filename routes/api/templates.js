@@ -29,9 +29,9 @@ router.post('/addTemplateField', function (req, res) {
                   });
               } else {
                   if (checkemail.length === 0) {
-                    var sql = "INSERT INTO template_field_master (tfmTemplateId, tfmBlockId, tfmField, tfmFieldName, tfmFieldValue, tfmFieldIsActive, tfmFieldIsDeleted, tfmFieldRequired, tfmFieldLength) VALUES ?";
+                    var sql = "INSERT INTO template_field_master (tfmTemplateId, tfmBlockId, tfmColumnName, tfmField, tfmFieldName, tfmFieldValue, tfmFieldIsActive, tfmFieldIsDeleted, tfmFieldRequired, tfmFieldLength) VALUES ?";
                     var values = [
-                        [post.tfmTemplateId, post.tfmBlockId, post.tfmField, post.tfmFieldName, post.tfmFieldValue, post.tfmFieldIsActive, 0, post.tfmFieldRequired, post.tfmFieldLength]
+                        [post.tfmTemplateId, post.tfmBlockId, post.tfmColumnName, post.tfmField, post.tfmFieldName, post.tfmFieldValue, post.tfmFieldIsActive, 0, post.tfmFieldRequired, post.tfmFieldLength]
                     ];
                     connection.query(sql, [values], function (err, register) {
                         if (err) {
@@ -103,86 +103,6 @@ router.post('/saveTemplateForm', function (req, res) {
     });
 });
 
-router.get('/getTemplateBlock/:id', function (req, res) {
-    req.getConnection(function (err, connection) {
-        if (err) {
-            res.json({
-                status: 0,
-                message: err
-            });
-        } else {
-            const async = require('async');
-            let templateFieldsRecords = [];
-            var sql = "SELECT  * FROM template_block_master WHERE tbmTemplateId = ?";
-            connection.query(sql, [req.params.id], function (err, rows) {
-                if (err) {
-                    res.json({
-                        status: false,
-                        message: err
-                    });
-                } else {
-                    async.series([
-                        function(callback){
-                            if(rows.length > 0) {
-                                async.eachSeries(rows, function(item, loopCb2){
-                                    var sql = "SELECT * FROM template_field_master WHERE tfmTemplateId = ? AND tfmBlockId = ? ORDER BY tfmId ASC";
-                                    connection.query(sql, [req.params.id, item.tbmId], function (err, rows) {
-                                        if (err) {
-                                            res.json({
-                                                status: false,
-                                                message: err
-                                            });
-                                        } else {
-                                            rows.map(e => {
-                                                e.tfmFieldDateAdded = moment(e.tfmFieldDateAdded, "YYYY-MM-DD HH:mm:ss").format('hh:mm a, MMM DD,YYYY');
-                                                return e;
-                                            });
-                                            let temp = {
-                                                tbmId: item.tbmId,
-                                                tbmBlockName: item.tbmBlockName,
-                                                templateFieldRecords: rows
-                                            }
-                                            templateFieldsRecords.push(temp);
-                                            loopCb2(null,true);
-                                        }
-                                    });
-                                },function(err,result){
-                
-                                        if(err){
-                                           
-                                        }
-                
-                                       callback(null,templateFieldsRecords);
-                
-                                });
-                            }else{
-                                
-                                callback(null,templateFieldsRecords);
-                            }
-                            
-                        }
-                      ],
-                      function(err,results){
-                            if (err) {
-                                res.json({
-                                    status: false,
-                                    message: err
-                                });
-                            }
-                            //next();
-                            res.json({
-                                status: true,
-                                message: "Success",
-                                data: templateFieldsRecords
-                            })
-                      });
-                    
-                }
-            });
-        }
-    });
-});
-
 router.post('/addTemplateBlock', function (req, res) {
     let post = req.body;
     req.getConnection(function (err, connection) {
@@ -192,9 +112,9 @@ router.post('/addTemplateBlock', function (req, res) {
                 message: err
             });
         } else {
-            var sql = "INSERT INTO template_block_master (tbmTemplateId, tbmBlockName, tbmOrder) VALUES ?";
+            var sql = "INSERT INTO template_block_master (tbmTemplateId, tbmBlockName, tbmOrder, tbmLayoutId) VALUES ?";
             var values = [
-                [post.tbmTemplateId, post.tbmBlockName, post.tbmOrder]
+                [post.tbmTemplateId, post.tbmBlockName, post.tbmOrder, post.tbmLayoutId]
             ];
             connection.query(sql, [values], function (err, register) {
                 if (err) {
@@ -415,7 +335,7 @@ router.post('/getTemplateFieldsRecords', function (req, res) {
                 message: err
             });
         } else {
-            var sql = "SELECT * FROM " + post.tableName;
+            var sql = "SELECT id," + post.fields + " FROM " + post.tableName;
             connection.query(sql, function (err, rows) {
                 if (err) {
                     res.json({
@@ -423,10 +343,6 @@ router.post('/getTemplateFieldsRecords', function (req, res) {
                         message: err
                     });
                 } else {
-                    rows.map(e => {
-                        e.dateUpdated = moment(e.dateUpdated, "YYYY-MM-DD HH:mm:ss").format('hh:mm a, MMM DD,YYYY');
-                        return e;
-                    });
                     res.json({
                         status: true,
                         message: "Success",
@@ -481,7 +397,98 @@ router.get('/getTemplateField/:id', function (req, res) {
             });
         } else {
             
-            var sql = "SELECT * FROM template_field_master WHERE tfmTemplateId = ? ORDER BY tfmId ASC";
+            const async = require('async');
+            let templateFieldsRecords = [];
+            let allFieldsRecord = [];
+            var sql = "SELECT  * FROM template_block_master WHERE tbmTemplateId = ?";
+            connection.query(sql, [req.params.id], function (err, rows) {
+                if (err) {
+                    res.json({
+                        status: false,
+                        message: err
+                    });
+                } else {
+                    async.series([
+                        function(callback){
+                            var sql = "SELECT * FROM template_field_master WHERE tfmTemplateId = ? ORDER BY tfmId ASC";
+                            connection.query(sql, [id], function (err, rows) {
+                                if (err) {
+                                    res.json({
+                                        status: false,
+                                        message: err
+                                    });
+                                    callback(null, false);
+                                } else {
+                                    rows.map(e => {
+                                        e.tfmFieldDateAdded = moment(e.tfmFieldDateAdded, "YYYY-MM-DD HH:mm:ss").format('hh:mm a, MMM DD,YYYY');
+                                        return e;
+                                    });
+                                    allFieldsRecord = rows;
+                                    callback(null, true);
+                                }
+                            });
+                        },
+                        function(callback){
+                            if(rows.length > 0) {
+                                async.eachSeries(rows, function(item, loopCb2){
+                                    var sql = "SELECT * FROM template_field_master WHERE tfmTemplateId = ? AND tfmBlockId = ? ORDER BY tfmId ASC";
+                                    connection.query(sql, [req.params.id, item.tbmId], function (err, rows) {
+                                        if (err) {
+                                            res.json({
+                                                status: false,
+                                                message: err
+                                            });
+                                        } else {
+                                            rows.map(e => {
+                                                e.tfmFieldDateAdded = moment(e.tfmFieldDateAdded, "YYYY-MM-DD HH:mm:ss").format('hh:mm a, MMM DD,YYYY');
+                                                return e;
+                                            });
+                                            let temp = {
+                                                tbmId: item.tbmId,
+                                                tbmBlockName: item.tbmBlockName,
+                                                tbmLayoutId: item.tbmLayoutId,
+                                                templateFieldRecords: rows
+                                            }
+                                            templateFieldsRecords.push(temp);
+                                            loopCb2(null,true);
+                                        }
+                                    });
+                                },function(err,result){
+                
+                                        if(err){
+                                           
+                                        }
+                
+                                       callback(null,templateFieldsRecords);
+                
+                                });
+                            }else{
+                                
+                                callback(null,templateFieldsRecords);
+                            }
+                            
+                        }
+                      ],
+                      function(err,results){
+                            if (err) {
+                                res.json({
+                                    status: false,
+                                    message: err
+                                });
+                            }
+                            //next();
+                            res.json({
+                                status: true,
+                                message: "Success",
+                                allfield: allFieldsRecord,
+                                data: templateFieldsRecords
+                            })
+                      });
+                    
+                }
+            });
+
+            /*var sql = "SELECT * FROM template_field_master WHERE tfmTemplateId = ? ORDER BY tfmId ASC";
             connection.query(sql, [id], function (err, rows) {
                 if (err) {
                     res.json({
@@ -499,10 +506,91 @@ router.get('/getTemplateField/:id', function (req, res) {
                         data: rows
                     })
                 }
-            });
+            });*/
         }
     });
   });
+
+  router.get('/getTemplateBlock/:id', function (req, res) {
+    req.getConnection(function (err, connection) {
+        if (err) {
+            res.json({
+                status: 0,
+                message: err
+            });
+        } else {
+            const async = require('async');
+            let templateFieldsRecords = [];
+            var sql = "SELECT  * FROM template_block_master WHERE tbmTemplateId = ?";
+            connection.query(sql, [req.params.id], function (err, rows) {
+                if (err) {
+                    res.json({
+                        status: false,
+                        message: err
+                    });
+                } else {
+                    async.series([
+                        function(callback){
+                            if(rows.length > 0) {
+                                async.eachSeries(rows, function(item, loopCb2){
+                                    var sql = "SELECT * FROM template_field_master WHERE tfmTemplateId = ? AND tfmBlockId = ? ORDER BY tfmId ASC";
+                                    connection.query(sql, [req.params.id, item.tbmId], function (err, rows) {
+                                        if (err) {
+                                            res.json({
+                                                status: false,
+                                                message: err
+                                            });
+                                        } else {
+                                            rows.map(e => {
+                                                e.tfmFieldDateAdded = moment(e.tfmFieldDateAdded, "YYYY-MM-DD HH:mm:ss").format('hh:mm a, MMM DD,YYYY');
+                                                return e;
+                                            });
+                                            let temp = {
+                                                tbmId: item.tbmId,
+                                                tbmBlockName: item.tbmBlockName,
+                                                tbmLayoutId: item.tbmLayoutId,
+                                                templateFieldRecords: rows
+                                            }
+                                            templateFieldsRecords.push(temp);
+                                            loopCb2(null,true);
+                                        }
+                                    });
+                                },function(err,result){
+                
+                                        if(err){
+                                           
+                                        }
+                
+                                       callback(null,templateFieldsRecords);
+                
+                                });
+                            }else{
+                                
+                                callback(null,templateFieldsRecords);
+                            }
+                            
+                        }
+                      ],
+                      function(err,results){
+                            if (err) {
+                                res.json({
+                                    status: false,
+                                    message: err
+                                });
+                            }
+                            //next();
+                            res.json({
+                                status: true,
+                                message: "Success",
+                                data: templateFieldsRecords
+                            })
+                      });
+                    
+                }
+            });
+        }
+    });
+});
 
 router.get('/getTemplates', function (req, res) {
   req.getConnection(function (err, connection) {
