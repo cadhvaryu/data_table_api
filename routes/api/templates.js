@@ -150,13 +150,14 @@ router.post('/addTemplate', function (req, res) {
                     message: err
                 });
             } else {
-                if (checkemail.length === 0) {
+                //if (checkemail.length === 0) {
 
-                    var sql = "INSERT INTO template_master (tmpltName, tmpltLayoutId, tmpltIsActive, tmpltIsDeleted) VALUES ?";
+                    var sql = "INSERT INTO template_master (tmpltName, tmpltIsActive, tmpltIsDeleted) VALUES ?";
                     var values = [
-                        [post.tmpltName, post.tmpltLayoutId, 1, 0]
+                        [post.tmpltName, 1, 0]
                     ];
                     connection.query(sql, [values], function (err, register) {
+                        console.log("Register Templates InsertId", register.insertId);
                         if (err) {
                             res.json({
                                 status: false,
@@ -184,7 +185,7 @@ router.post('/addTemplate', function (req, res) {
                                                 });
                                             } else {
                                                 res.json({
-                                                    data: register.tmpltId,
+                                                    data: register.insertId,
                                                     status: true,
                                                     message: "Template inserted successfully"
                                                 });
@@ -192,7 +193,7 @@ router.post('/addTemplate', function (req, res) {
                                         });
                                     } else {
                                         res.json({
-                                            data: register.tmpltId,
+                                            data: register.insertId,
                                             status: true,
                                             message: "Template inserted successfully"
                                         });
@@ -204,12 +205,12 @@ router.post('/addTemplate', function (req, res) {
                         }
                     });
                     
-                } else {
+                /*} else {
                   res.json({
                     status: false,
                     message: "Template Name is already Exists."
                   });
-                }   
+                } */  
             }
         });
     }
@@ -244,6 +245,34 @@ router.put('/updateFieldStatus/:id', function(req, res) {
     });
 });
 
+router.put('/updateBlock/:id', function(req, res) {
+    let id = req.params.id;
+    let post = req.body;
+    req.getConnection(function (err, connection) {
+        if (err) {
+            res.json({
+                status: 0,
+                message: err
+            });
+        } else {
+            var sql = "UPDATE template_block_master SET tbmBlockName = ? WHERE  tbmId = ?";
+            connection.query(sql, [post.tbmBlockName, id], function (err, rows) {
+                if (err) {
+                    res.json({
+                        status: false,
+                        message: err
+                    });
+                } else {
+                    res.json({
+                        status: true,
+                        message: "Block updated successfully.",
+                    })
+                }
+            });
+        }
+    });
+});
+
 router.put('/updateTemplate/:id', function(req, res) {
     let id = req.params.id;
     let post = req.body;
@@ -254,8 +283,8 @@ router.put('/updateTemplate/:id', function(req, res) {
                 message: err
             });
         } else {
-            var sql = "UPDATE template_master SET tmpltName = ?, tmpltLayoutId = ? WHERE tmpltId = ?";
-            connection.query(sql, [post.tmpltName, post.tmpltLayoutId, id], function (err, rows) {
+            var sql = "UPDATE template_master SET tmpltName = ? WHERE tmpltId = ?";
+            connection.query(sql, [post.tmpltName, id], function (err, rows) {
                 if (err) {
                     res.json({
                         status: false,
@@ -601,7 +630,7 @@ router.get('/getTemplates', function (req, res) {
           });
       } else {
           
-          var sql = "SELECT t.*, (SELECT lytName FROM layout_master AS l where l.lytId = t.tmpltLayoutId) as layoutName FROM template_master AS t WHERE tmpltIsActive = 1 AND tmpltIsDeleted = 0 ORDER BY tmpltId ASC";
+          var sql = "SELECT t.* FROM template_master AS t WHERE tmpltIsActive = 1 AND tmpltIsDeleted = 0 ORDER BY tmpltId ASC";
           connection.query(sql, function (err, rows) {
               if (err) {
                   res.json({
