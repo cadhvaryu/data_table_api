@@ -40,7 +40,7 @@ router.post('/addTemplateField', function (req, res) {
                                 message: err
                             });
                         } else {
-                            let fieldQuery = "ALTER TABLE " + post.tmpltName + " ADD COLUMN `" + post.tfmFieldName.replace(/ /g,"_").toLowerCase() + "` " + setDataType(post.tfmField, post.tfmFieldLength)
+                            let fieldQuery = "ALTER TABLE table_" + post.tfmTemplateId + " ADD COLUMN `" + post.tfmFieldName.replace(/ /g,"_").toLowerCase() + "` " + setDataType(post.tfmField, post.tfmFieldLength)
                             connection.query(fieldQuery, function (err, register1) {
                                 if (err) {
                                     res.json({
@@ -166,7 +166,7 @@ router.post('/addTemplate', function (req, res) {
                         } else {
                             let checkTableQuery = "SELECT * FROM information_schema.tables where table_name = ? ";
 
-                            connection.query(checkTableQuery, [post.tmpltName.replace(/ /g,"_").toLowerCase()], function (err, checkTable) {
+                            connection.query(checkTableQuery, ["table_"+ register.insertId], function (err, checkTable) {
 
                                 if (err) {
                                     res.json({
@@ -176,7 +176,7 @@ router.post('/addTemplate', function (req, res) {
                                 } else {
         
                                     if (checkTable.length === 0) {
-                                        let tblQuery = "CREATE TABLE `" + post.tmpltName.replace(/ /g,"_").toLowerCase() + "` (id INT(10) AUTO_INCREMENT PRIMARY KEY, fieldOrder INT(10) NULL)";
+                                        let tblQuery = "CREATE TABLE table_" + register.insertId + " (id INT(10) AUTO_INCREMENT PRIMARY KEY, fieldOrder INT(10) NULL)";
                                         connection.query(tblQuery, function (err, register1) {
                                             if (err) {
                                                 res.json({
@@ -688,7 +688,9 @@ router.get('/getLayoutRecords', function (req, res) {
 module.exports = router;
 
 function setDataType(value, length) {
-    if (value === 'url' || value === 'textbox' || value === 'text' || value === 'radio' || value === 'dropdown' || value === 'phone' || value === 'email' || value === 'date') {
+    if (value === 'url' || value === 'textbox' || value === 'checkbox' || value === 'radio' || value === 'dropdown' || value === 'phone' || value === 'email' || value === 'date') {
+        return 'VARCHAR(255) NULL';
+    } else if(value === 'text') {
         return 'VARCHAR('+ length +') NULL';
     } else if (value === 'integer') {
         return 'INT('+ length +') NULL';
