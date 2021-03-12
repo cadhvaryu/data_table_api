@@ -693,7 +693,7 @@ function setDataType(value, length) {
     } else if(value === 'text') {
         return 'VARCHAR('+ length +') NULL';
     } else if (value === 'integer') {
-        return 'INT('+ length +') NULL';
+        return 'INT(10) NULL';
     } else if (value === 'checkbox') {
         return 'BOOLEAN NULL';
     } else {
